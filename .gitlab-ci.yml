@@ -70,8 +70,9 @@ scan:
           -Dsonar.token="$SONAR_TOKEN" \
           -Dsonar.qualitygate.wait=true
       elif [ -n "$SONAR_TOKEN" ]; then
-        echo "Executing SonarCloud scan..."
+        echo "Executing SonarCloud scan against https://sonarcloud.io..."
         sonar-scanner \
+          -Dsonar.host.url="https://sonarcloud.io" \
           -Dsonar.token="$SONAR_TOKEN" \
           -Dsonar.qualitygate.wait=true
       else
