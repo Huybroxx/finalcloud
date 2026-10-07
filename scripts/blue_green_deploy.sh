@@ -44,6 +44,7 @@ else
 fi
 
 echo "Current active: $CURRENT_COLOR, deploying target: $TARGET_COLOR"
+docker rm -f "bg_app_$TARGET_COLOR" 2>/dev/null || true
 
 compose_exec -f "$COMPOSE_FILE" up -d --no-deps --build "app-$TARGET_COLOR"
 
