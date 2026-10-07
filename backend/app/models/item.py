@@ -1,6 +1,23 @@
 from datetime import datetime, timezone
 from typing import Optional
 from pydantic import BaseModel, Field
+from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime
+from app.db import Base
+
+
+class ItemDB(Base):
+    __tablename__ = "items"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(100), nullable=False)
+    description = Column(String(500), nullable=True)
+    price = Column(Float, nullable=False)
+    is_active = Column(Boolean, default=True, nullable=False)
+    created_at = Column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
 
 
 class ItemBase(BaseModel):

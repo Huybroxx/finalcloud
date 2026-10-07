@@ -39,6 +39,8 @@ part6:
 ![alt text](image-21.png)
 http://huynn69.fuji.io.vn/
 
-Bonus:
+Bonus 1 2:
 ![alt text](image-25.png)
 ![alt text](image-26.png)
+bonus 4:
+alembic đã được cấu hình

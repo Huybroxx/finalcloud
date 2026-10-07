@@ -38,6 +38,8 @@ RUN groupadd --system --gid 10001 appgroup && \
     useradd --system --uid 10001 --gid 10001 --no-create-home --shell /sbin/nologin appuser
 
 COPY --chown=appuser:appgroup ./app /app/app
+COPY --chown=appuser:appgroup ./alembic.ini /app/alembic.ini
+COPY --chown=appuser:appgroup ./alembic /app/alembic
 
 USER appuser:appgroup
 
@@ -46,4 +48,4 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
