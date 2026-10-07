@@ -1,0 +1,14 @@
+Dạ em chào anh, em gửi anh link repo và báo cáo tiến độ hoàn thành bài tập DevOps cho service FastAPI:
+
+- Repo GitHub: https://github.com/Huybroxx/finalcloud
+- Domain Production: http://fuji.io.vn (Docs: http://fuji.io.vn/docs | Health: http://fuji.io.vn/health)
+
+Tóm tắt các mục đã hoàn thiện:
+1. Đóng gói Dockerfile chuẩn Multi-stage build, chạy quyền non-root (appuser), có HEALTHCHECK nội bộ, image tối ưu ~140MB.
+2. Thiết lập CI/CD GitHub Actions đủ 5 stage: lint (flake8, black), test (pytest coverage 100%), scan SonarQube, build và deploy.
+3. Tích hợp Quality Gate làm chốt chặn bắt buộc: nếu code không đạt chuẩn chất lượng sẽ tự động block deploy.
+4. Triển khai chiến lược Blue-Green Zero-Downtime bằng Nginx reverse proxy, có cơ chế kiểm tra health check trước khi switch traffic và tự động rollback khi có sự cố.
+5. Đã setup deploy thực tế qua SSH lên VPS 161.118.195.1, hệ thống đang chạy ổn định trên domain fuji.io.vn.
+6. Trong README.md đã trả lời chi tiết 3 câu hỏi đánh giá kỹ thuật của đề bài.
+
+Nhờ anh review giúp em ạ, em cảm ơn anh!
