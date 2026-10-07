@@ -11,7 +11,7 @@ env:
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -25,7 +25,7 @@ jobs:
           black --check backend/app/ backend/tests/ --line-length=100
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: lint
     steps:
       - uses: actions/checkout@v4
@@ -46,7 +46,7 @@ jobs:
             backend/test-results.xml
 
   scan:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: test
     steps:
       - uses: actions/checkout@v4
@@ -80,7 +80,7 @@ jobs:
             sonar-scanner -Dsonar.qualitygate.wait=true
 
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: scan
     steps:
       - uses: actions/checkout@v4
@@ -88,7 +88,7 @@ jobs:
       - run: docker build -t ${{ env.IMAGE_NAME }}:${{ github.sha }} -t ${{ env.IMAGE_NAME }}:latest ./backend
 
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: build
     if: github.ref == 'refs/heads/main'
     steps:
@@ -138,7 +138,7 @@ jobs:
           "
 
   notify:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [lint, test, scan, build, deploy]
     if: always()
     steps:
