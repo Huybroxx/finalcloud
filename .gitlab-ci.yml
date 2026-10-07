@@ -117,13 +117,17 @@ deploy:
         echo "WARNING: SSH_PRIVATE_KEY is not configured in GitLab CI/CD Variables. Skipping SSH deploy."
         exit 0
       fi
-      SERVER_HOST="${SERVER_HOST:-161.118.195.1}"
+      if [ -z "$SERVER_HOST" ]; then
+        echo "SERVER_HOST is not configured in GitLab CI/CD Variables."
+        exit 1
+      fi
       SERVER_USER="${SERVER_USER:-ubuntu}"
+      SERVER_PORT="${SERVER_PORT:-22}"
       mkdir -p ~/.ssh
       echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
       chmod 600 ~/.ssh/id_rsa
-      ssh-keyscan -H "$SERVER_HOST" >> ~/.ssh/known_hosts 2>/dev/null
-      ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no "$SERVER_USER@$SERVER_HOST" "
+      ssh-keyscan -p "$SERVER_PORT" -H "$SERVER_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+      ssh -i ~/.ssh/id_rsa -p "$SERVER_PORT" -o StrictHostKeyChecking=no "$SERVER_USER@$SERVER_HOST" "
         set -e
         echo 'Deploying to production server...'
         cd /opt/finaldevops

@@ -67,17 +67,17 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL || 'https://sonarcloud.io' }}
         run: |
-          if [ -n "$SONAR_TOKEN" ]; then
-            echo "Executing SonarQube Scanner CLI against $SONAR_HOST_URL..."
-            docker run --rm \
-              -e SONAR_HOST_URL="$SONAR_HOST_URL" \
-              -e SONAR_TOKEN="$SONAR_TOKEN" \
-              -v "${PWD}:/usr/src" \
-              sonarsource/sonar-scanner-cli:latest \
-              sonar-scanner -Dsonar.qualitygate.wait=true
-          else
-            echo "::warning ::SONAR_TOKEN is not configured in GitHub Secrets. Skipping SonarQube Quality Gate scan."
+          if [ -z "$SONAR_TOKEN" ]; then
+            echo "::error ::SONAR_TOKEN secret is not configured in GitHub Secrets! SonarQube Quality Gate scan is required."
+            exit 1
           fi
+          echo "Executing SonarQube Scanner CLI against $SONAR_HOST_URL..."
+          docker run --rm \
+            -e SONAR_HOST_URL="$SONAR_HOST_URL" \
+            -e SONAR_TOKEN="$SONAR_TOKEN" \
+            -v "${PWD}:/usr/src" \
+            sonarsource/sonar-scanner-cli:latest \
+            sonar-scanner -Dsonar.qualitygate.wait=true
 
   build:
     runs-on: ubuntu-latest
@@ -96,18 +96,23 @@ jobs:
       - name: Deploy to production VPS
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SERVER_HOST: ${{ secrets.SERVER_HOST || '161.118.195.1' }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_PORT: ${{ secrets.SERVER_PORT || '22' }}
           SERVER_USER: ${{ secrets.SERVER_USER || 'ubuntu' }}
         run: |
           if [ -z "$SSH_PRIVATE_KEY" ]; then
-            echo "::warning ::SSH_PRIVATE_KEY secret is not configured in GitHub Secrets! Skipping deploy."
-            exit 0
+            echo "::error ::SSH_PRIVATE_KEY secret is not configured in GitHub Secrets!"
+            exit 1
+          fi
+          if [ -z "$SERVER_HOST" ]; then
+            echo "::error ::SERVER_HOST secret is not configured in GitHub Secrets!"
+            exit 1
           fi
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H "$SERVER_HOST" >> ~/.ssh/known_hosts 2>/dev/null
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no "$SERVER_USER@$SERVER_HOST" "
+          ssh-keyscan -p "$SERVER_PORT" -H "$SERVER_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          ssh -i ~/.ssh/id_rsa -p "$SERVER_PORT" -o StrictHostKeyChecking=no "$SERVER_USER@$SERVER_HOST" "
             set -e
             echo 'Deploying to production server...'
             if [ ! -d /opt/finaldevops ]; then
