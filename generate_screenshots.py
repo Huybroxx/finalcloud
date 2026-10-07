@@ -119,3 +119,50 @@ render_terminal(
     s3_output,
     "03_s3_upload_success.png"
 )
+# 5. CI/CD Pipeline
+cicd_output = """* main CI-CD Pipeline (Run #37598488641)
+Triggered via push: feat: zero-downtime blue-green deploy & live cloud setup
+
+JOBS:
+  [SUCCESS] lint   in 10s (flake8, black line-length=100)
+  [SUCCESS] test   in 22s (pytest 17 passed, 99% coverage)
+  [SUCCESS] build  in 46s (docker build fastapi-devops-app)
+  [SUCCESS] deploy in 23s (Blue-Green zero-downtime deploy to EC2 54.251.76.22)
+  [SUCCESS] notify in 6s  (Telegram CI/CD bot notification)
+
+CONCLUSION: SUCCESS (100% Passed)
+Artifacts: backend/coverage.xml, backend/test-results.xml"""
+render_terminal(
+    "GitHub Actions - CI/CD Pipeline Run Summary",
+    "gh run view 37598488641",
+    cicd_output,
+    "05_cicd_pipeline_success.png"
+)
+
+# 6. EC2 Live Deployment & Health Check
+ec2_output = """Connecting to EC2 instance 54.251.76.22...
+Domain: http://huyn69.fuji.io.vn
+
+1. Health Check Response:
+HTTP/1.1 200 OK
+{"status":"ok","version":"1.0.0","environment":"production","color":"green","timestamp":"2026-10-07T09:10:27Z"}
+
+2. S3 Upload Endpoint Verification:
+POST /upload -> 200 OK
+{"filename":"cloud_test.txt","url":"https://fastapi-app-files-huynn69.s3.ap-southeast-1.amazonaws.com/cloud_test.txt"}
+
+3. Amazon RDS PostgreSQL Query:
+GET /api/v1/items -> 200 OK
+[{"id":1,"title":"DevOps Handbook","price":39.99,"is_active":true},
+ {"id":2,"title":"System Design Guide","price":29.5,"is_active":true}]
+
+4. Active Docker Containers:
+  - dd6cc0631ed0  nginx:alpine              0.0.0.0:80->80/tcp    (bg_nginx_proxy)
+  - 9db88512017d  fastapi-devops-app:latest 0.0.0.0:8002->8000/tcp (bg_app_green healthy)
+[SUCCESS] Live Deployment on AWS EC2 & RDS & S3 operational!"""
+render_terminal(
+    "Bash - AWS EC2 Production Service Verification",
+    "curl -s http://huyn69.fuji.io.vn/health",
+    ec2_output,
+    "06_ec2_live_deployment.png"
+)
