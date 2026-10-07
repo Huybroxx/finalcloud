@@ -4,13 +4,20 @@ set -euo pipefail
 COMPOSE_FILE="docker-compose.blue-green.yml"
 NGINX_CONF="nginx/default.conf"
 
-if docker compose version >/dev/null 2>&1; then
-    COMPOSE_CMD="docker compose"
-elif command -v docker-compose >/dev/null 2>&1; then
-    COMPOSE_CMD="docker-compose"
-else
-    COMPOSE_CMD="docker compose"
-fi
+compose_exec() {
+    if docker compose version >/dev/null 2>&1; then
+        docker compose "$@"
+    elif command -v docker-compose >/dev/null 2>&1; then
+        docker-compose "$@"
+    elif [ -x "$HOME/.docker/cli-plugins/docker-compose" ]; then
+        "$HOME/.docker/cli-plugins/docker-compose" "$@"
+    elif [ -x "/usr/local/bin/docker-compose" ]; then
+        "/usr/local/bin/docker-compose" "$@"
+    else
+        echo "Error: Neither 'docker compose' nor 'docker-compose' is available." >&2
+        exit 1
+    fi
+}
 
 if grep -q "app-green:8000" "$NGINX_CONF" 2>/dev/null; then
     ROLLBACK_TO="blue"
@@ -20,8 +27,8 @@ fi
 
 echo "Rolling back traffic to: $ROLLBACK_TO"
 
-$COMPOSE_CMD -f "$COMPOSE_FILE" start "app-$ROLLBACK_TO" || \
-$COMPOSE_CMD -f "$COMPOSE_FILE" up -d "app-$ROLLBACK_TO"
+compose_exec -f "$COMPOSE_FILE" start "app-$ROLLBACK_TO" || \
+compose_exec -f "$COMPOSE_FILE" up -d "app-$ROLLBACK_TO"
 
 cat <<EOF > "$NGINX_CONF"
 upstream app_backend {

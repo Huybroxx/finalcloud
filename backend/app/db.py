@@ -6,7 +6,7 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 load_dotenv()
 
 DB_USER = os.getenv("DB_USER", "postgres")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "Huyhuyhuy123.")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "")
 DB_HOST = os.getenv("DB_HOST", "fastapi-db.c8p0uyc2mw9n.us-east-1.rds.amazonaws.com")
 DB_PORT = os.getenv("DB_PORT", "5432")
 DB_NAME = os.getenv("DB_NAME", "fastapi_prod")

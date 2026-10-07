@@ -6,26 +6,28 @@ NGINX_CONF="nginx/default.conf"
 MAX_RETRIES=10
 RETRY_INTERVAL=3
 
-# Determine compose command
-if docker compose version >/dev/null 2>&1; then
-    COMPOSE_CMD="docker compose"
-elif command -v docker-compose >/dev/null 2>&1; then
-    COMPOSE_CMD="docker-compose"
-else
+# Ensure docker compose is available
+if ! docker compose version >/dev/null 2>&1 && ! command -v docker-compose >/dev/null 2>&1; then
     mkdir -p "$HOME/.docker/cli-plugins"
     curl -sSL "https://github.com/docker/compose/releases/latest/download/docker-compose-linux-$(uname -m)" -o "$HOME/.docker/cli-plugins/docker-compose" 2>/dev/null || true
     chmod +x "$HOME/.docker/cli-plugins/docker-compose" 2>/dev/null || true
+fi
+
+compose_exec() {
     if docker compose version >/dev/null 2>&1; then
-        COMPOSE_CMD="docker compose"
+        docker compose "$@"
     elif command -v docker-compose >/dev/null 2>&1; then
-        COMPOSE_CMD="docker-compose"
+        docker-compose "$@"
+    elif [ -x "$HOME/.docker/cli-plugins/docker-compose" ]; then
+        "$HOME/.docker/cli-plugins/docker-compose" "$@"
+    elif [ -x "/usr/local/bin/docker-compose" ]; then
+        "/usr/local/bin/docker-compose" "$@"
     else
         echo "Error: Neither 'docker compose' nor 'docker-compose' is available." >&2
         exit 1
     fi
-fi
+}
 
-echo "Using compose command: $COMPOSE_CMD"
 echo "Starting Blue-Green deployment..."
 
 if grep -q "app-green:8000" "$NGINX_CONF" 2>/dev/null; then
@@ -42,7 +44,7 @@ fi
 
 echo "Current active: $CURRENT_COLOR, deploying target: $TARGET_COLOR"
 
-$COMPOSE_CMD -f "$COMPOSE_FILE" up -d --no-deps --build "app-$TARGET_COLOR"
+compose_exec -f "$COMPOSE_FILE" up -d --no-deps --build "app-$TARGET_COLOR"
 
 echo "Verifying target container health on port $TARGET_PORT..."
 HEALTHY=false
@@ -82,9 +84,9 @@ server {
 }
 EOF
 
-    $COMPOSE_CMD -f "$COMPOSE_FILE" up -d nginx
+    compose_exec -f "$COMPOSE_FILE" up -d nginx
     sleep 2
-    docker exec bg_nginx_proxy nginx -s reload || $COMPOSE_CMD -f "$COMPOSE_FILE" restart nginx
+    docker exec bg_nginx_proxy nginx -s reload || compose_exec -f "$COMPOSE_FILE" restart nginx
     sleep 3
 
     echo "Stopping previous container app-$CURRENT_COLOR..."

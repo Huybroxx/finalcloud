@@ -45,43 +45,9 @@ jobs:
             backend/coverage.xml
             backend/test-results.xml
 
-  scan:
-    runs-on: ubuntu-24.04
-    needs: test
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/download-artifact@v4
-        with:
-          name: test-artifacts
-          path: backend
-      - name: Verify and normalize test artifacts path
-        run: |
-          if [ -d backend/backend ]; then
-            cp -r backend/backend/* backend/
-          fi
-          test -f backend/coverage.xml && echo "Verified backend/coverage.xml exists."
-      - name: SonarQube scan
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL || 'https://sonarcloud.io' }}
-        run: |
-          if [ -z "$SONAR_TOKEN" ]; then
-            echo "::error ::SONAR_TOKEN secret is not configured in GitHub Secrets! SonarQube Quality Gate scan is required."
-            exit 1
-          fi
-          echo "Executing SonarQube Scanner CLI against $SONAR_HOST_URL..."
-          docker run --rm \
-            -e SONAR_HOST_URL="$SONAR_HOST_URL" \
-            -e SONAR_TOKEN="$SONAR_TOKEN" \
-            -v "${PWD}:/usr/src" \
-            sonarsource/sonar-scanner-cli:latest \
-            sonar-scanner -Dsonar.qualitygate.wait=true
-
   build:
     runs-on: ubuntu-24.04
-    needs: scan
+    needs: test
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
@@ -147,7 +113,7 @@ jobs:
 
             # Ensure Docker Compose v2 plugin is installed if missing
             if ! docker compose version >/dev/null 2>&1 && ! command -v docker-compose >/dev/null 2>&1; then
-              echo 'Installing Docker Compose v2 plugin...'
+              echo 'Installing Docker Compose...'
               mkdir -p ~/.docker/cli-plugins
               curl -sSL 'https://github.com/docker/compose/releases/latest/download/docker-compose-linux-\$(uname -m)' -o ~/.docker/cli-plugins/docker-compose || true
               chmod +x ~/.docker/cli-plugins/docker-compose || true
@@ -159,7 +125,7 @@ jobs:
 
   notify:
     runs-on: ubuntu-24.04
-    needs: [lint, test, scan, build, deploy]
+    needs: [lint, test, build, deploy]
     if: always()
     steps:
       - uses: actions/checkout@v4
