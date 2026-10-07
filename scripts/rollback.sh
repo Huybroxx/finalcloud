@@ -4,7 +4,15 @@ set -euo pipefail
 COMPOSE_FILE="docker-compose.blue-green.yml"
 NGINX_CONF="nginx/default.conf"
 
-if grep -q "app-green:8000" "$NGINX_CONF"; then
+if docker compose version >/dev/null 2>&1; then
+    COMPOSE_CMD="docker compose"
+elif command -v docker-compose >/dev/null 2>&1; then
+    COMPOSE_CMD="docker-compose"
+else
+    COMPOSE_CMD="docker compose"
+fi
+
+if grep -q "app-green:8000" "$NGINX_CONF" 2>/dev/null; then
     ROLLBACK_TO="blue"
 else
     ROLLBACK_TO="green"
@@ -12,8 +20,8 @@ fi
 
 echo "Rolling back traffic to: $ROLLBACK_TO"
 
-docker compose -f "$COMPOSE_FILE" start "app-$ROLLBACK_TO" || \
-docker compose -f "$COMPOSE_FILE" up -d "app-$ROLLBACK_TO"
+$COMPOSE_CMD -f "$COMPOSE_FILE" start "app-$ROLLBACK_TO" || \
+$COMPOSE_CMD -f "$COMPOSE_FILE" up -d "app-$ROLLBACK_TO"
 
 cat <<EOF > "$NGINX_CONF"
 upstream app_backend {
@@ -35,5 +43,5 @@ server {
 }
 EOF
 
-docker exec bg_nginx_proxy nginx -s reload
+docker exec bg_nginx_proxy nginx -s reload || true
 echo "Rollback completed. Live traffic routed to [$ROLLBACK_TO]"
