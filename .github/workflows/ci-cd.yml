@@ -90,6 +90,12 @@ jobs:
           ssh -i ~/.ssh/id_rsa -p "$SERVER_PORT" -o StrictHostKeyChecking=no "$SERVER_USER@$SERVER_HOST" "
             set -e
             echo 'Deploying to production server...'
+
+            # Ensure Docker daemon is active and accessible
+            sudo systemctl enable --now docker 2>/dev/null || sudo service docker start 2>/dev/null || true
+            sudo usermod -aG docker \$USER 2>/dev/null || true
+            sudo chmod 666 /var/run/docker.sock 2>/dev/null || true
+
             if [ ! -d /opt/finaldevops ]; then
               sudo mkdir -p /opt/finaldevops
               sudo chown -R \$USER:\$USER /opt/finaldevops
@@ -110,14 +116,6 @@ jobs:
             echo 'AWS_BUCKET_NAME=$AWS_BUCKET_NAME' >> backend/.env
             echo 'AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID' >> backend/.env
             echo 'AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY' >> backend/.env
-
-            # Ensure Docker Compose v2 plugin is installed if missing
-            if ! docker compose version >/dev/null 2>&1 && ! command -v docker-compose >/dev/null 2>&1; then
-              echo 'Installing Docker Compose...'
-              mkdir -p ~/.docker/cli-plugins
-              curl -sSL 'https://github.com/docker/compose/releases/latest/download/docker-compose-linux-\$(uname -m)' -o ~/.docker/cli-plugins/docker-compose || true
-              chmod +x ~/.docker/cli-plugins/docker-compose || true
-            fi
 
             chmod +x ./scripts/blue_green_deploy.sh ./scripts/rollback.sh
             ./scripts/blue_green_deploy.sh

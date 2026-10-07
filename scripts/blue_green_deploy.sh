@@ -6,11 +6,12 @@ NGINX_CONF="nginx/default.conf"
 MAX_RETRIES=10
 RETRY_INTERVAL=3
 
-# Ensure docker compose is available
-if ! docker compose version >/dev/null 2>&1 && ! command -v docker-compose >/dev/null 2>&1; then
-    mkdir -p "$HOME/.docker/cli-plugins"
-    curl -sSL "https://github.com/docker/compose/releases/latest/download/docker-compose-linux-$(uname -m)" -o "$HOME/.docker/cli-plugins/docker-compose" 2>/dev/null || true
-    chmod +x "$HOME/.docker/cli-plugins/docker-compose" 2>/dev/null || true
+# Ensure docker daemon is active
+if [ ! -S /var/run/docker.sock ]; then
+    echo "Docker socket not found. Starting docker daemon..."
+    sudo systemctl enable --now docker 2>/dev/null || sudo service docker start 2>/dev/null || true
+    sudo chmod 666 /var/run/docker.sock 2>/dev/null || true
+    sleep 3
 fi
 
 compose_exec() {
