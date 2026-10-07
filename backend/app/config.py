@@ -1,4 +1,4 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
 
 
@@ -12,10 +12,23 @@ class Settings(BaseSettings):
     PORT: int = Field(default=8000, description="Server port")
     COLOR: str = Field(default="blue", description="Active deployment color: blue or green")
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = True
+    DB_HOST: str = Field(default="localhost", description="Database host")
+    DB_PORT: int = Field(default=5432, description="Database port")
+    DB_NAME: str = Field(default="fastapi_prod", description="Database name")
+    DB_USER: str = Field(default="postgres", description="Database username")
+    DB_PASSWORD: str = Field(default="", description="Database password")
+
+    AWS_REGION: str = Field(default="ap-southeast-1", description="AWS Region")
+    AWS_BUCKET_NAME: str = Field(
+        default="fastapi-app-files-huynn69", description="AWS S3 Bucket name"
+    )
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=True,
+        extra="allow",
+    )
 
 
 settings = Settings()

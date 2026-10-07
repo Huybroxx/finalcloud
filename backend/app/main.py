@@ -1,8 +1,9 @@
-from fastapi import FastAPI, status
+from fastapi import FastAPI, File, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.api.router import api_router
 from app.models.item import HealthResponse
+from app.s3 import upload_file_to_s3
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -46,6 +47,12 @@ def root():
         "docs": "/docs",
         "health": "/health",
     }
+
+
+@app.post("/upload", tags=["Storage"])
+async def upload_file(file: UploadFile = File(...)):
+    url = upload_file_to_s3(file.file, file.filename)
+    return {"filename": file.filename, "url": url}
 
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
