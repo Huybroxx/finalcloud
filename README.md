@@ -1,5 +1,5 @@
 # Đồ Án DevOps: CI/CD Pipeline FastAPI với Docker, SonarQube Quality Gate & Triển Khai Blue-Green
-
+# Test
 Dự án xây dựng quy trình CI/CD Pipeline hoàn chỉnh cho ứng dụng FastAPI: đóng gói Docker theo mô hình Multi-stage build, kiểm soát chất lượng mã nguồn bắt buộc với SonarQube Quality Gate và triển khai không gián đoạn dịch vụ (Zero-Downtime Deployment) theo chiến lược Blue-Green trên máy chủ Cloud VPS.
 
 ---
@@ -9,7 +9,7 @@ Dự án xây dựng quy trình CI/CD Pipeline hoàn chỉnh cho ứng dụng Fa
 - **Học viên:** Ngô Ngọc Huy
 - **Domain Production:** [http://fuji.io.vn](http://fuji.io.vn) | [http://www.fuji.io.vn](http://www.fuji.io.vn)
 - **Máy chủ VPS Production:** `161.118.195.1` (Ubuntu 22.04 LTS)
-- **Kho lưu trữ GitHub:** [https://github.com/Huybroxx/final-cicd-fpt-HuyNN69](https://github.com/Huybroxx/final-cicd-fpt-HuyNN69)
+- **Kho lưu trữ GitHub:** [https://github.com/Huybroxx/finalcloud](https://github.com/Huybroxx/finalcloud)
 
 ---
 
