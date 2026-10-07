@@ -135,17 +135,15 @@ jobs:
             git reset --hard origin/main
 
             # Configure production .env for RDS & S3
-            cat << 'ENVEOF' > backend/.env
-DB_HOST=$DB_HOST
-DB_PORT=$DB_PORT
-DB_NAME=$DB_NAME
-DB_USER=$DB_USER
-DB_PASSWORD=$DB_PASSWORD
-AWS_REGION=$AWS_REGION
-AWS_BUCKET_NAME=$AWS_BUCKET_NAME
-AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-ENVEOF
+            echo 'DB_HOST=$DB_HOST' > backend/.env
+            echo 'DB_PORT=$DB_PORT' >> backend/.env
+            echo 'DB_NAME=$DB_NAME' >> backend/.env
+            echo 'DB_USER=$DB_USER' >> backend/.env
+            echo 'DB_PASSWORD=$DB_PASSWORD' >> backend/.env
+            echo 'AWS_REGION=$AWS_REGION' >> backend/.env
+            echo 'AWS_BUCKET_NAME=$AWS_BUCKET_NAME' >> backend/.env
+            echo 'AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID' >> backend/.env
+            echo 'AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY' >> backend/.env
 
             # Ensure Docker Compose v2 plugin is installed if missing
             if ! docker compose version >/dev/null 2>&1 && ! command -v docker-compose >/dev/null 2>&1; then
