@@ -99,6 +99,15 @@ jobs:
           SERVER_HOST: ${{ secrets.SERVER_HOST }}
           SERVER_PORT: ${{ secrets.SERVER_PORT || '22' }}
           SERVER_USER: ${{ secrets.SERVER_USER || 'ubuntu' }}
+          DB_HOST: ${{ secrets.DB_HOST || 'fastapi-db.c8p0uyc2mw9n.us-east-1.rds.amazonaws.com' }}
+          DB_PORT: ${{ secrets.DB_PORT || '5432' }}
+          DB_NAME: ${{ secrets.DB_NAME || 'fastapi_prod' }}
+          DB_USER: ${{ secrets.DB_USER || 'postgres' }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD || 'Huyhuyhuy123.' }}
+          AWS_REGION: ${{ secrets.AWS_REGION || 'ap-southeast-1' }}
+          AWS_BUCKET_NAME: ${{ secrets.AWS_BUCKET_NAME || 'fastapi-app-files-huynn69' }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
           if [ -z "$SSH_PRIVATE_KEY" ]; then
             echo "::error ::SSH_PRIVATE_KEY secret is not configured in GitHub Secrets!"
@@ -125,11 +134,24 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
 
+            # Configure production .env for RDS & S3
+            cat << 'ENVEOF' > backend/.env
+DB_HOST=$DB_HOST
+DB_PORT=$DB_PORT
+DB_NAME=$DB_NAME
+DB_USER=$DB_USER
+DB_PASSWORD=$DB_PASSWORD
+AWS_REGION=$AWS_REGION
+AWS_BUCKET_NAME=$AWS_BUCKET_NAME
+AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+ENVEOF
+
             # Ensure Docker Compose v2 plugin is installed if missing
             if ! docker compose version >/dev/null 2>&1 && ! command -v docker-compose >/dev/null 2>&1; then
-              echo "Installing Docker Compose v2 plugin..."
+              echo 'Installing Docker Compose v2 plugin...'
               mkdir -p ~/.docker/cli-plugins
-              curl -sSL "https://github.com/docker/compose/releases/latest/download/docker-compose-linux-$(uname -m)" -o ~/.docker/cli-plugins/docker-compose || true
+              curl -sSL 'https://github.com/docker/compose/releases/latest/download/docker-compose-linux-\$(uname -m)' -o ~/.docker/cli-plugins/docker-compose || true
               chmod +x ~/.docker/cli-plugins/docker-compose || true
             fi
 

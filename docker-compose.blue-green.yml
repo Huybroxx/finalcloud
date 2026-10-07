@@ -19,6 +19,8 @@ services:
     restart: unless-stopped
     ports:
       - "8001:8000"
+    env_file:
+      - ./backend/.env
     environment:
       - ENVIRONMENT=production
       - DEBUG=False
@@ -41,6 +43,8 @@ services:
     restart: unless-stopped
     ports:
       - "8002:8000"
+    env_file:
+      - ./backend/.env
     environment:
       - ENVIRONMENT=production
       - DEBUG=False
